@@ -1,0 +1,33 @@
+{
+    "name": "linkorb/blazon",
+    "description": "Blazon: Static site generator",
+    "homepage": "http://www.github.com/linkorb/blazon",
+    "keywords": ["php", "blazon", "static site generator", "linkorb"],
+    "type": "library",
+    "authors": [
+        {
+            "name": "LinkORB Engineering",
+            "email": "engineering@linkorb.com",
+            "role": "Development"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "symfony/console": "~2.7",
+        "symfony/yaml": "~2.7",
+        "twig/twig": "^1.22",
+        "erusev/parsedown": "~1.5",
+        "leafo/lessphp": "0.5.0",
+        "vkbansal/frontmatter": "~1.0"
+    },
+    "require-dev": {
+        "linkorb/autotune": "~1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Blazon\\": "src/"
+        }
+    },
+    "bin": ["bin/blazon"],
+    "license": "MIT"
+}

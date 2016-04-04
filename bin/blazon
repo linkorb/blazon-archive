@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+use Symfony\Component\Console\Application;
+
+$loader = __DIR__ . '/../vendor/autoload.php';
+
+if (!file_exists($loader)) {
+    $loader = __DIR__ . '/../../../autoload.php';
+}
+
+if (!file_exists($loader)) {
+    die(
+        'You must set up the project dependencies, run the following commands:' . PHP_EOL .
+        'curl -s http://getcomposer.org/installer | php' . PHP_EOL .
+        'php composer.phar install' . PHP_EOL
+    );
+}
+
+$autoLoader = require($loader);
+
+if (class_exists('AutoTune\Tuner')) {
+    \AutoTune\Tuner::init($autoLoader);
+}
+
+$application = new Application('Blazon', '1.0.0');
+$application->setCatchExceptions(true);
+$application->add(new \Blazon\Command\SiteGenerateCommand());
+$application->add(new \Blazon\Command\SiteServeCommand());
+$application->run();

@@ -1,0 +1,8 @@
+---
+title: Blazon example
+
+pages:
+    index:
+        src: pages/index.md
+    about:
+        src: pages/about.md
