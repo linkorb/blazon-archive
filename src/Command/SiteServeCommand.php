@@ -20,16 +20,10 @@ class SiteServeCommand extends Command
         $this->setName('site:serve')
             ->setDescription('Serve a Blazon site')
             ->addOption(
-                'src',
+                'filename',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Source directory'
-            )
-            ->addOption(
-                'dest',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'Destination directory'
+                'Filename'
             )
             ->addOption(
                 'port',
@@ -43,22 +37,15 @@ class SiteServeCommand extends Command
     
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $src = getcwd();
         $port = $input->getOption('port');
-        
-        if ($input->getOption('src')) {
-            $src = $input->getOption('src');
+
+        $filename = getcwd() . '/blazon.yml';
+        if ($input->getOption('filename')) {
+            $filename = $input->getOption('filename');
         }
-        $src = Utils::makePathAbsolute($src);
         
-        $dest = $src . '/build';
-        if ($input->getOption('dest')) {
-            $dest = $input->getOption('dest');
-        }
-        $dest = Utils::makePathAbsolute($dest);
+        putenv('BLAZON_FILE='. $filename);
         
-        putenv('BLAZON_SRC='. $src);
-        putenv('BLAZON_DEST='. $dest);
         $webroot = __DIR__ . '/../../web';
         
         $cmd = 'php -S 0.0.0.0:' . $port . ' -t ' . $webroot . ' ' . $webroot . '/index.php';

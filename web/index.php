@@ -18,15 +18,13 @@ if (!file_exists($loader)) {
 
 $autoLoader = require($loader);
 
-$src = getenv('BLAZON_SRC');
-$dest = getenv('BLAZON_DEST');
-
-if (!$src || !$dest) {
-    throw new RuntimeException("Environment variable BLAZON_SRC or BLAZON_DEST not set (correctly)");
+$filename = getenv('BLAZON_FILE');
+if (!$filename) {
+    throw new RuntimeException("Environment variable BLAZON_FILE not set (correctly)");
 }
 
 
-$blazon = new Blazon($src, $dest);
+$blazon = new Blazon($filename, null, null);
 $blazon->run();
 
 //print_r($_SERVER);
@@ -35,7 +33,7 @@ $uri = $_SERVER['REQUEST_URI'];
 if ($uri=='/') {
     $uri = '/index';
 }
-$filename = $dest . $uri;
+$filename = $blazon->getDest() . $uri;
 if (!file_exists($filename)) {
     $filename .= '.html';
     if (!file_exists($filename)) {
