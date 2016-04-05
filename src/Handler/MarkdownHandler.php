@@ -40,7 +40,14 @@ class MarkdownHandler
         $html = $parsedown->text($this->content);
         
         $template = $this->blazon->getTwig()->loadTemplate('templates/default.html.twig');
-        $data=['content' => $html, 'title'=>'some title'];
+        $site = $this->blazon->getSite();
+        
+        $data = [
+            'content' => $html,
+            'site' => $site,
+            'page' => $page
+        ];
+        
         $output = $template->render($data);
         
         file_put_contents($this->blazon->getDest() . '/' . $page->getName() . '.html', $output);

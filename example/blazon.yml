@@ -1,8 +1,13 @@
 ---
-title: Blazon example
+site:
+    title: Blazon example
+    properties:
+        tagline: Awesome Static Site Generator
 
 pages:
     index:
         src: pages/index.md
+        properties:
+            myprop: This is my page property!
     about:
         src: pages/about.md

@@ -14,6 +14,7 @@ class Blazon
     protected $src;
     protected $dest;
     protected $twig;
+    protected $site;
     
     public function __construct($src, $dest, OutputInterface $output = null)
     {
@@ -54,11 +55,6 @@ class Blazon
         return $this->twig;
     }
     
-    public function getSite()
-    {
-        return $this->site;
-    }
-    
     public function getOutput()
     {
         return $this->output;
@@ -71,6 +67,11 @@ class Blazon
         $this->pages[$page->getName()] = $page;
     }
     
+    public function getSite()
+    {
+        return $this->site;
+    }
+    
     public function getPages()
     {
         return $this->pages;
@@ -78,8 +79,15 @@ class Blazon
 
     public function load()
     {
+        $this->site = new Site();
         $parser = new YamlParser();
         $config = $parser->parse(file_get_contents($this->src . '/blazon.yml'));
+
+        if (isset($config['site']['properties'])) {
+            foreach ($config['site']['properties'] as $key => $value) {
+                $this->site->setProperty($key, $value);
+            }
+        }
         
         if (isset($config['pages'])) {
             foreach ($config['pages'] as $name => $pageNode) {
@@ -96,16 +104,16 @@ class Blazon
                         $handler->init($page);
                     }
                 }
+
+                if (isset($pageNode['properties'])) {
+                    foreach ($pageNode['properties'] as $key => $value) {
+                        $page->setProperty($key, $value);
+                    }
+                }
+
                 $this->addPage($page);
             }
         }
-        
-        /*
-        print_r($config);
-        print_r($site);
-        exit();
-        */
-        
         return $this;
     }
     

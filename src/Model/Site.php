@@ -5,6 +5,7 @@ namespace Blazon\Model;
 class Site
 {
     protected $title;
+    use PropertyTrait;
     
     public function getTitle()
     {
@@ -16,6 +17,4 @@ class Site
         $this->title = $title;
         return $this;
     }
-    
-
 }

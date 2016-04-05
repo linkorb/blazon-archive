@@ -9,6 +9,7 @@ class Page implements PageInterface
     protected $src;
     protected $handler;
     protected $layout;
+    use PropertyTrait;
     
     public function __construct($name, $src = null)
     {
