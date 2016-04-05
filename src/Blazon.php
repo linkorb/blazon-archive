@@ -109,8 +109,51 @@ class Blazon
         return $this;
     }
     
+    public function copyAssets($src, $dest)
+    {
+        if (!file_exists($dest)) {
+            mkdir($dest, 0755);
+        }
+        $less = new \lessc;
+        $this->output->writeLn("Copying assets from $src to $dest");
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(
+                $src,
+                \RecursiveDirectoryIterator::SKIP_DOTS
+            ),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+        
+        foreach ($iterator as $item) {
+            if ($item->isDir()) {
+                $path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+                $this->output->writeLn(" * Directory: " . $iterator->getSubPathName());
+                if (!file_exists($path)) {
+                    mkdir($path);
+                }
+            } else {
+                $srcFile = $item;
+                $destFile = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+                $this->output->writeLn(" * File: " . $iterator->getSubPathName());
+                $ext = pathinfo($iterator->getSubPathName(), PATHINFO_EXTENSION);
+                switch ($ext) {
+                    case 'less':
+                        $content = file_get_contents($srcFile);
+                        $css = $less->compile($content);
+                        $destFile = str_replace('.less', '.css', $destFile);
+                        file_put_contents($destFile, $css);
+                        break;
+                    default:
+                        copy($srcFile, $destFile);
+                }
+            }
+        }
+    }
+    
     public function generate()
     {
+        $this->copyAssets($this->src . '/assets', $this->dest . '/assets');
+        
         foreach ($this->getPages() as $page) {
             $this->output->writeLn('Page: ' . $page->getName());
             $handler = $page->getHandler($this);
