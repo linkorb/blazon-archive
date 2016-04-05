@@ -15,29 +15,22 @@ class Blazon
     protected $dest;
     protected $twig;
     protected $site;
+    protected $filename;
     
-    public function __construct($src, $dest, OutputInterface $output = null)
+    public function __construct($filename, OutputInterface $output = null, $dest = null)
     {
+        $this->filename = $filename;
+        if (!file_exists($this->filename)) {
+            throw new RuntimeException("blazon.yml file not found: " . $this->filename);
+        }
+
         if (!$output) {
             $output = new \Symfony\Component\Console\Output\NullOutput();
         }
         $this->output = $output;
-        $this->src = $src;
+        
+        $this->src = dirname($filename);
         $this->dest = $dest;
-
-        if (!file_exists($src)) {
-            throw new RuntimeException("Source directory does not exist: " . $src);
-        }
-        if (!file_exists($src . '/blazon.yml')) {
-            throw new RuntimeException("Source directory does not contain a blazon.yml file: " . $src);
-        }
-        
-        if (!file_exists($dest)) {
-            throw new RuntimeException("Destination directory does not exist: " . $dest);
-        }
-        
-        $loader = new \Twig_Loader_Filesystem($this->src);
-        $this->twig = new \Twig_Environment($loader, []);
     }
     
     public function getSrc()
@@ -83,6 +76,30 @@ class Blazon
         $parser = new YamlParser();
         $config = $parser->parse(file_get_contents($this->src . '/blazon.yml'));
 
+        if (!$this->dest) {
+            if (isset($config['dest'])) {
+                $dest = rtrim($config['dest'], '/');
+                if ($dest[0]!='/') {
+                    $this->dest = $this->src . '/' . $dest;
+                } else {
+                    $this->dest = $dest;
+                }
+            }
+        
+            if (!$this->dest) {
+                $this->dest = dirname($this->filename) . '/build';
+            }
+        }
+
+        if (isset($config['src'])) {
+            $src = rtrim($config['src'], '/');
+            if ($src[0]!='/') {
+                $this->src .= '/' . $src;
+            } else {
+                $this->src = $src;
+            }
+        }
+        
         if (isset($config['site']['properties'])) {
             foreach ($config['site']['properties'] as $key => $value) {
                 $this->site->setProperty($key, $value);
@@ -114,6 +131,18 @@ class Blazon
                 $this->addPage($page);
             }
         }
+        
+        
+        if (!file_exists($this->src)) {
+            throw new RuntimeException("Source directory does not exist: " . $this->src);
+        }
+        if (!file_exists($this->dest)) {
+            throw new RuntimeException("Destination directory does not exist: " . $this->dest);
+        }
+        
+        $loader = new \Twig_Loader_Filesystem($this->src);
+        $this->twig = new \Twig_Environment($loader, []);
+
         return $this;
     }
     
@@ -160,6 +189,10 @@ class Blazon
     
     public function generate()
     {
+        $this->output->writeLn('<info>Generating site</info>');
+        $this->output->writeLn('   * Filename: ' . $this->filename);
+        $this->output->writeLn('   * src: ' . $this->src);
+        $this->output->writeLn('   * dest: ' . $this->dest);
         $this->copyAssets($this->src . '/assets', $this->dest . '/assets');
         
         foreach ($this->getPages() as $page) {

@@ -1,4 +1,7 @@
 ---
+src: doc/
+dest: output/
+
 site:
     title: Blazon example
     properties:
@@ -6,8 +9,8 @@ site:
 
 pages:
     index:
-        src: pages/index.md
+        src: index.md
         properties:
             myprop: This is my page property!
     about:
-        src: pages/about.md
+        src: about.md

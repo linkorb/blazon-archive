@@ -20,26 +20,27 @@ class SiteGenerateCommand extends Command
         $this->setName('site:generate')
             ->setDescription('Generate a Blazon site')
             ->addOption(
-                'src',
+                'filename',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Source directory'
+                'blazon.yml file'
             )
             ->addOption(
                 'dest',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Destination directory'
+                'Destination path'
             )
         ;
     }
     
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $src = getcwd();
-        if ($input->getOption('src')) {
-            $src = $input->getOption('src');
+        $filename = getcwd() . '/blazon.yml';
+        if ($input->getOption('filename')) {
+            $filename = $input->getOption('filename');
         }
+        /*
         $src = Utils::makePathAbsolute($src);
         
         $dest = $src . '/build';
@@ -47,12 +48,16 @@ class SiteGenerateCommand extends Command
             $dest = $input->getOption('dest');
         }
         $dest = Utils::makePathAbsolute($dest);
+        */
+                
+        $dest = null;
+        if ($input->getOption('dest')) {
+            $dest = $input->getOption('dest');
+            $dest = Utils::makePathAbsolute($dest);
+        }
         
-        $output->writeLn('<info>Generating site</info>');
-        $output->writeLn('   * Source: ' . $src);
-        $output->writeLn('   * Destination: ' . $dest);
-        
-        $blazon = new Blazon($src, $dest, $output);
+        $blazon = new Blazon($filename, $output, $dest);
+
         $blazon->run();
         
         $output->writeLn("<comment>Done</comment>");
