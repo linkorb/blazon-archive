@@ -9,7 +9,7 @@ use Parsedown;
 use VKBansal\FrontMatter\Parser as FrontMatterParser;
 use VKBansal\FrontMatter\Document as FrontMatterDocument;
 
-class MarkdownHandler
+class HtmlHandler
 {
     protected $blazon;
     protected $content;
@@ -19,25 +19,13 @@ class MarkdownHandler
         $this->blazon = $blazon;
     }
     
-    public function init(Page $page)
+    public function init(Page $page, $config)
     {
-        $data = file_get_contents($this->blazon->getSrc() . '/' . $page->getSrc());
-
-        $doc = FrontMatterParser::parse($data);
-        $config = $doc->getConfig();
-        if (isset($config['title'])) {
-            $page->setTitle($config['title']);
-        }
-        if (isset($config['layout'])) {
-            $page->setLayout($config['layout']);
-        }
-        $this->content = $doc->getContent();
     }
     
     public function generate(Page $page)
     {
-        $parsedown = new Parsedown();
-        $html = $parsedown->text($this->content);
+        $html = file_get_contents($this->blazon->getSrc() . '/' . $page->getSrc());
         
         $template = $this->blazon->getTwig()->loadTemplate('templates/default.html.twig');
         $site = $this->blazon->getSite();

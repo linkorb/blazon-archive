@@ -108,19 +108,43 @@ class Blazon
         
         if (isset($config['pages'])) {
             foreach ($config['pages'] as $name => $pageNode) {
-                $page = new Page($name);
-                if ($pageNode['src']) {
+                $page = new Page($name, $pageNode);
+                
+                $handler = null;
+                    
+                if (isset($pageNode['src'])) {
                     $pageSrc = $this->src . '/' . $pageNode['src'];
                     if (!file_exists($pageSrc)) {
                         throw new RuntimeException("Page src does not exist: " . $pageSrc);
                     }
-                    $page->setSrc($pageSrc);
+                    $page->setSrc($pageNode['src']);
+                }
+                if (isset($pageNode['handler'])) {
+                    $handlerClassName = $pageNode['handler'];
+                    $handler = new $handlerClassName($this);
+                }
+                
+                if (!$handler) {
+                    if ($page->getSrc()=='') {
+                        throw new RuntimeException("No handler and no src specified for page: " . $page->getName());
+                    }
+                    // guess handler based on file-extension
                     if (substr($pageSrc, -3)=='.md') {
                         $handler = new \Blazon\Handler\MarkdownHandler($this);
-                        $page->setHandler($handler);
-                        $handler->init($page);
+                    }
+                    if (substr($pageSrc, -5)=='.twig') {
+                        $handler = new \Blazon\Handler\TwigHandler($this);
+                    }
+                    if (substr($pageSrc, -5)=='.html') {
+                        $handler = new \Blazon\Handler\HtmlHandler($this);
                     }
                 }
+                if (!$handler) {
+                    throw new RuntimeException("No handler for src file of page " . $page->getName());
+                }
+                $page->setHandler($handler);
+                $handler->init($page, $config);
+            
 
                 if (isset($pageNode['properties'])) {
                     foreach ($pageNode['properties'] as $key => $value) {
@@ -141,7 +165,20 @@ class Blazon
         }
         
         $loader = new \Twig_Loader_Filesystem($this->src);
+        
+        $loader->addPath(
+            $this->src . '/templates',
+            'Templates'
+        );
+        
         $this->twig = new \Twig_Environment($loader, []);
+        
+        $filter = new \Twig_SimpleFilter('urlsafe_command_name', function (\Twig_Environment $env, $string) {
+            // get the current charset for instance
+            $string = str_replace(':', '__', $string);
+            return $string;
+        }, array('needs_environment' => true));
+        $this->twig->addFilter($filter);
 
         return $this;
     }

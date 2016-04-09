@@ -1,0 +1,16 @@
+{% extends "@Templates/default.html.twig" %}
+
+{% block content %}
+    <div class="jumbotron" style="text-align: center">
+        <h1>Commands</h1>
+        <h2>All available commands</h2>
+    </div>
+
+    <h3>Commands</h3>
+    <ul>
+    {% for command in commands %}
+        <li><code><a href="commands__{{command.getName()|urlsafe_command_name}}">{{ command.getName() }}</a></code> {{ command.getDescription()}}
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

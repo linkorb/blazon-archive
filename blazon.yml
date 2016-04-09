@@ -13,4 +13,13 @@ pages:
         properties:
             myprop: This is my page property!
     about:
-        src: about.md
+        src: about.html.twig
+    
+    contact:
+        src: contact.html
+        
+    commands:
+        handler: "\\Blazon\\Handler\\CommandsHandler"
+        classes:
+            - "\\Blazon\\Command\\SiteGenerateCommand"
+            - "\\Blazon\\Command\\SiteServeCommand"

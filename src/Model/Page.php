@@ -9,12 +9,14 @@ class Page implements PageInterface
     protected $src;
     protected $handler;
     protected $layout;
+    protected $config;
+        
     use PropertyTrait;
     
-    public function __construct($name, $src = null)
+    public function __construct($name, $config = [])
     {
         $this->setName($name);
-        $this->setSrc($src);
+        $this->config = $config;
     }
     
     public function getName()
@@ -74,6 +76,18 @@ class Page implements PageInterface
         $this->layout = $layout;
         return $this;
     }
+    
+    public function getConfig()
+    {
+        return $this->config;
+    }
+    
+    public function setConfig($config)
+    {
+        $this->config = $config;
+        return $this;
+    }
+    
     
     
 }

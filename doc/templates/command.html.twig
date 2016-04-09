@@ -1,0 +1,23 @@
+{% extends "@Templates/default.html.twig" %}
+
+{% block content %}
+    <div class="jumbotron" style="text-align: center">
+        <h1>Command</h1>
+        <h2>{{ command.getName() }}</h2>
+    </div>
+    <a href="/commands" class="btn btn-default">Back to commands</a>
+
+    <h3>Description</h3>
+    <p class="lead">{{ command.getDescription() }}</p>
+    <h3>Arguments</h3>
+    {% for argument in command.getDefinition.getArguments() %}
+        *!!!
+    {% endfor %}
+    <h3>Options</h3>
+    <ul>
+    {% for option in command.getDefinition.getOptions() %}
+        <li><code>--{{ option.getName() }}</code>: {{ option.getDescription() }}
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}
