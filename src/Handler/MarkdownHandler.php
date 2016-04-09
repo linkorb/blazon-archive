@@ -25,12 +25,14 @@ class MarkdownHandler
 
         $doc = FrontMatterParser::parse($data);
         $config = $doc->getConfig();
-        if (isset($config['title'])) {
-            $page->setTitle($config['title']);
+        foreach ($config as $key => $value) {
+            $page->setProperty($key, $value);
         }
+        /*
         if (isset($config['layout'])) {
             $page->setLayout($config['layout']);
         }
+        */
         $this->content = $doc->getContent();
     }
     
