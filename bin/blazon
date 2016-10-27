@@ -25,6 +25,7 @@ if (class_exists('AutoTune\Tuner')) {
 
 $application = new Application('Blazon', '1.0.0');
 $application->setCatchExceptions(true);
-$application->add(new \Blazon\Command\SiteGenerateCommand());
-$application->add(new \Blazon\Command\SiteServeCommand());
+$application->add(new \Blazon\Command\InitCommand());
+$application->add(new \Blazon\Command\GenerateCommand());
+$application->add(new \Blazon\Command\ServeCommand());
 $application->run();

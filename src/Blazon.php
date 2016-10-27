@@ -161,7 +161,9 @@ class Blazon
             throw new RuntimeException("Source directory does not exist: " . $this->src);
         }
         if (!file_exists($this->dest)) {
-            throw new RuntimeException("Destination directory does not exist: " . $this->dest);
+            if (!file_exists($this->dest)) {
+                mkdir($this->dest, 0755);
+            }
         }
         
         $loader = new \Twig_Loader_Filesystem($this->src);
@@ -183,8 +185,11 @@ class Blazon
         return $this;
     }
     
-    public function copyAssets($src, $dest)
+    public function copyAssets($src, $dest, $process = true)
     {
+        if (!file_exists($src)) {
+            return;
+        }
         if (!file_exists($dest)) {
             mkdir($dest, 0755);
         }
@@ -211,14 +216,26 @@ class Blazon
                 $this->output->writeLn(" * File: " . $iterator->getSubPathName());
                 $ext = pathinfo($iterator->getSubPathName(), PATHINFO_EXTENSION);
                 switch ($ext) {
-                    case 'less':
-                        $content = file_get_contents($srcFile);
-                        $css = $less->compile($content);
-                        $destFile = str_replace('.less', '.css', $destFile);
-                        file_put_contents($destFile, $css);
+                    case 'php':
+                        throw new RuntimeException("Blocked: " . $iterator->getSubPathName());
                         break;
-                    default:
-                        copy($srcFile, $destFile);
+                }
+                
+                if (!$process) {
+                    copy($srcFile, $destFile);
+                } else {
+                    switch ($ext) {
+                        case 'less':
+                            // Only compile on request
+                            $content = file_get_contents($srcFile);
+                            echo $srcFile . "\n";
+                            $css = $less->compile($content);
+                            $destFile = str_replace('.less', '.css', $destFile);
+                            file_put_contents($destFile, $css);
+                            break;
+                        default:
+                            copy($srcFile, $destFile);
+                    }
                 }
             }
         }
@@ -237,6 +254,17 @@ class Blazon
             $handler = $page->getHandler($this);
             $handler->generate($page);
         }
+    }
+
+    public function init()
+    {
+        $this->load();
+        
+        $this->output->writeLn('<info>Initializing site</info>');
+        $this->output->writeLn('   * Filename: ' . $this->filename);
+        $this->output->writeLn('   * src: ' . $this->src);
+        $this->output->writeLn('   * dest: ' . $this->dest);
+        $this->copyAssets($this->src . '/../static/assets', $this->dest . '/assets', false);
     }
     
     public function run()

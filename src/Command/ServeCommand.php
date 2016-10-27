@@ -13,52 +13,44 @@ use Blazon\Model\Site;
 use Blazon\Loader\SiteLoader;
 use Blazon\Utils;
 
-class SiteGenerateCommand extends Command
+class ServeCommand extends Command
 {
     public function configure()
     {
-        $this->setName('site:generate')
-            ->setDescription('Generate a Blazon site')
+        $this->setName('serve')
+            ->setDescription('Serve a Blazon site')
             ->addOption(
                 'filename',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'blazon.yml file'
+                'Filename'
             )
             ->addOption(
-                'dest',
+                'port',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Destination path'
+                'Port number',
+                8080
             )
         ;
     }
     
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        $port = $input->getOption('port');
+
         $filename = getcwd() . '/blazon.yml';
         if ($input->getOption('filename')) {
             $filename = $input->getOption('filename');
         }
-        /*
-        $src = Utils::makePathAbsolute($src);
         
-        $dest = $src . '/build';
-        if ($input->getOption('dest')) {
-            $dest = $input->getOption('dest');
-        }
-        $dest = Utils::makePathAbsolute($dest);
-        */
-                
-        $dest = null;
-        if ($input->getOption('dest')) {
-            $dest = $input->getOption('dest');
-            $dest = Utils::makePathAbsolute($dest);
-        }
+        putenv('BLAZON_FILE='. $filename);
         
-        $blazon = new Blazon($filename, $output, $dest);
-
-        $blazon->run();
+        $webroot = __DIR__ . '/../../web';
+        
+        $cmd = 'php -S 0.0.0.0:' . $port . ' -t ' . $webroot . ' ' . $webroot . '/index.php';
+        exec($cmd);
+        
         
         $output->writeLn("<comment>Done</comment>");
 

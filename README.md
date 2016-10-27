@@ -12,14 +12,18 @@ Blazon: Static Site Generator
 
 ## Usage:
 
-1. Create a new directory (or repository)
-2. Add a file called `blazon.yml`
-3. Create a `build/` directory in your repository (optionally add this directory to .gitignore)
-3. Start the preview webserver:
+0. Create a new directory (or repository)
+0. Add a file called `blazon.yml`
+0. Create a `build/` directory in your repository (optionally add this directory to .gitignore)
+0. Initialize the build directory with static assets from `/static/assets`:
     ```sh
-        blazon site:serve
+        blazon init
     ```
-4. Open the following URL in your webbrowser: [http://127.0.0.1:8080](http://127.0.0.1:8080)
+0. Start the preview webserver:
+    ```sh
+        blazon serve
+    ```
+0. Open the following URL in your webbrowser: [http://127.0.0.1:8080](http://127.0.0.1:8080)
 
 The preview server re-generates the site on every request.
 
