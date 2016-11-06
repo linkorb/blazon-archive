@@ -34,7 +34,7 @@ class CommandsHandler
     {
         $site = $this->blazon->getSite();
         $config = $page->getConfig();
-        $outputPath = $this->blazon->getDest() . DIRECTORY_SEPARATOR;
+        $outputPath = $page->getBaseDir() . DIRECTORY_SEPARATOR;
 
         $pageName = $page->getName();
         $pageOutputName = $pageName . '.html';

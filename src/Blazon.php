@@ -57,7 +57,7 @@ class Blazon
 
     public function addPage(Page $page)
     {
-        $this->pages[$page->getName()] = $page;
+        $this->pages[] = $page;
     }
 
     public function getSite()
@@ -106,9 +106,24 @@ class Blazon
             }
         }
 
+        $pageDirs = array();
         if (isset($config['pages'])) {
+            $pagePathPattern = sprintf(
+                '@^(.+)%s([^%s]*)$@', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR
+            );
             foreach ($config['pages'] as $name => $pageNode) {
+
                 $page = new Page($name, $pageNode);
+
+                // handle directory structure in the page 'name'
+                $pathMatches = array();
+                if (preg_match($pagePathPattern, $name, $pathMatches)) {
+                    $pageDirs[] = $pathMatches[1];
+                    $page->setBaseDir($this->dest . DIRECTORY_SEPARATOR . $pathMatches[1]);
+                    $page->setName($pathMatches[2]);
+                } else {
+                    $page->setBaseDir($this->dest);
+                }
 
                 $handler = null;
 
@@ -167,6 +182,7 @@ class Blazon
         if (!file_exists($this->dest)) {
             mkdir($this->dest, 0755);
         }
+        $this->makeOutputDirectories($pageDirs, $this->dest, 0755);
 
         $loader = new \Twig_Loader_Filesystem($this->src);
 
@@ -273,5 +289,57 @@ class Blazon
     {
         $this->load();
         $this->generate();
+    }
+
+    /**
+     * Given a list of paths, relative to destinationPath, make all missing dirs.
+     *
+     * The paths must be directories, not paths to files.
+     *
+     * @param array $paths
+     * @param string $destinationPath
+     * @param int $mode
+     */
+    public function makeOutputDirectories(array $paths, $destinationPath, $mode)
+    {
+        // turn a list of paths into a tree
+        $tree = array();
+        foreach ($paths as $path) {
+            $node = &$tree;
+            foreach (explode(DIRECTORY_SEPARATOR, $path) as $segment) {
+                if (! array_key_exists($segment, $node)) {
+                    $node[$segment] = array();
+                }
+                $node = &$node[$segment];
+            }
+        }
+        // walk the tree and create directories
+        $this->mkTreeAtPath($tree, $destinationPath, $mode);
+    }
+
+    /**
+     * Recurively make a tree of directories at path.
+     *
+     * @param array $tree
+     * @param string $path
+     * @param int $mode
+     *
+     * @throws RuntimeException
+     */
+    private function mkTreeAtPath($tree, $path, $mode)
+    {
+        foreach ($tree as $dirName => $subTree) {
+            $dir = $path . DIRECTORY_SEPARATOR . $dirName;
+            if (! is_dir($dir) && file_exists($dir)) {
+                throw new RuntimeException(
+                    sprintf('Cannot make the directory "%s" because it is a file.', $dir)
+                );
+            } elseif (! is_dir($dir) && ! mkdir($dir, $mode)) {
+                throw new RuntimeException(
+                    sprintf('Failed to make the directory "%s".', $dir)
+                );
+            }
+            $this->mkTreeAtPath($subTree, $dir, $mode);
+        }
     }
 }

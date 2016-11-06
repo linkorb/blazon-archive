@@ -31,6 +31,6 @@ class TwigHandler
 
         $output = $template->render($data);
 
-        file_put_contents($this->blazon->getDest() . '/' . $page->getName() . '.html', $output);
+        file_put_contents($page->getBaseDir() . '/' . $page->getName() . '.html', $output);
     }
 }

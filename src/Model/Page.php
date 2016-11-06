@@ -4,6 +4,7 @@ namespace Blazon\Model;
 
 class Page implements PageInterface
 {
+    protected $baseDir;
     protected $name;
     protected $title;
     protected $src;
@@ -86,5 +87,15 @@ class Page implements PageInterface
     {
         $this->config = $config;
         return $this;
+    }
+
+    public function getBaseDir()
+    {
+        return $this->baseDir;
+    }
+
+    public function setBaseDir($baseDir)
+    {
+        $this->baseDir = $baseDir;
     }
 }
