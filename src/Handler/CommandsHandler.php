@@ -15,6 +15,10 @@ use Blazon\Model\Site;
 
 class CommandsHandler
 {
+    const CONF_CHILDNAME_STRATEGY = 'child_page_name_strategy';
+    const CHILDNAME_STRATEGY_PREFIX = 'prefix_with_parent_name';
+    const CHILDNAME_STRATEGY_NOPREFIX = 'no_prefix';
+
     protected $blazon;
 
     public function __construct(Blazon $blazon)
@@ -77,11 +81,22 @@ class CommandsHandler
      */
     protected function cmdNameToResourceName(Command $command, Page $parentPage)
     {
-        return sprintf(
-            '%s__%s.html',
-            $parentPage->getName(),
-            str_replace(':', '__', $command->getName())
-        );
+        $conf = $parentPage->getConfig();
+        $strategy = self::CHILDNAME_STRATEGY_PREFIX;
+
+        if (array_key_exists(self::CONF_CHILDNAME_STRATEGY, $conf)) {
+            $strategy =  $conf[self::CONF_CHILDNAME_STRATEGY];
+        }
+
+        if ($strategy === self::CHILDNAME_STRATEGY_PREFIX) {
+            return sprintf(
+                '%s__%s.html',
+                $parentPage->getName(),
+                str_replace(':', '__', $command->getName())
+            );
+        } else {
+            return sprintf('%s.html', str_replace(':', '__', $command->getName()));
+        }
     }
 
     /*
