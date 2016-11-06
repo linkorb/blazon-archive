@@ -152,6 +152,10 @@ class Blazon
                     }
                 }
 
+                if (isset($pageNode['title'])) {
+                    $page->setTitle($pageNode['title']);
+                }
+
                 $this->addPage($page);
             }
         }
