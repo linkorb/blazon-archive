@@ -52,7 +52,9 @@ class CommandsHandler
             $data = [
                 'site' => $site,
                 'page' => $page,
-                'command' => $command
+                'command' => $command,
+                'index_page' => $page, /* use this instead of page */
+                'index_page_url' => $pageOutputName,
             ];
             $output = $commandTemplate->render($data);
             file_put_contents($outputPath . $outputName, $output);
