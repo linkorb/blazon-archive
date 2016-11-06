@@ -25,43 +25,62 @@ class CommandsHandler
 
     public function generate(Page $page)
     {
+        $site = $this->blazon->getSite();
         $config = $page->getConfig();
+        $outputPath = $this->blazon->getDest() . DIRECTORY_SEPARATOR;
+
+        $pageName = $page->getName();
+        $pageOutputName = $pageName . '.html';
+
+        $commandTemplate = $this->blazon->getTwig()->loadTemplate('@Templates/command.html.twig');
+        $pageTemplate = $this->blazon->getTwig()->loadTemplate('@Templates/commands.html.twig');
+
         $commands = [];
         foreach ($config['classes'] as $className) {
-            $command = new $className();
-            $commands[] = $command;
-
-            $template = $this->blazon->getTwig()->loadTemplate('@Templates/command.html.twig');
-            $site = $this->blazon->getSite();
-
+            $command = $this->loadCommand($className, $pageName);
+            $outputName = $this->cmdNameToResourceName($command, $page);
+            $commands[$outputName] = $command;
+        }
+        foreach ($commands as $outputName => $command) {
             $data = [
                 'site' => $site,
                 'page' => $page,
                 'command' => $command
             ];
-
-            $output = $template->render($data);
-
-            $filename = $page->getName() . '__' . str_replace(':', '__', $command->getName()) . '.html';
-            file_put_contents($this->blazon->getDest() . '/' . $filename, $output);
+            $output = $commandTemplate->render($data);
+            file_put_contents($outputPath . $outputName, $output);
         }
-
-
-        $template = $this->blazon->getTwig()->loadTemplate('@Templates/commands.html.twig');
-        $site = $this->blazon->getSite();
 
         $data = [
             'site' => $site,
             'page' => $page,
             'commands' => $commands
         ];
-
-        $output = $template->render($data);
-
-        $filename = $page->getName() . '.html';
-        file_put_contents($this->blazon->getDest() . '/' . $filename, $output);
+        $output = $pageTemplate->render($data);
+        file_put_contents($outputPath . $pageOutputName, $output);
 
         return;
 
+    }
+
+    /*
+     * Convert a command name to an HTML file name.
+     */
+    protected function cmdNameToResourceName(Command $command, Page $parentPage)
+    {
+        return sprintf(
+            '%s__%s.html',
+            $parentPage->getName(),
+            str_replace(':', '__', $command->getName())
+        );
+    }
+
+    /*
+     * Load a Symfony Console Command instance.
+     */
+    private function loadCommand($className, $pageName)
+    {
+        $command = new $className();
+        return $command;
     }
 }
