@@ -2,6 +2,13 @@
 
 namespace Blazon\Handler;
 
+use ReflectionClass;
+use ReflectionException;
+use RuntimeException;
+
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputDefinition;
+
 use Blazon\Blazon;
 use Blazon\Model\Page;
 use Blazon\Model\Site;
@@ -77,10 +84,53 @@ class CommandsHandler
 
     /*
      * Load a Symfony Console Command instance.
+     *
+     * We desire to obtain the Command configuration without being required to
+     * inject the Command's dependencies.  Here, we use Reflection to obtain an
+     * instance of a Command, bypassing its constructor.
      */
     private function loadCommand($className, $pageName)
     {
-        $command = new $className();
+        $command = null;
+        $method_configure = null;
+
+        try {
+
+            $refl = new ReflectionClass($className);
+            if (! $refl->isSubclassOf(Command::class)) {
+                throw new RuntimeException(
+                    sprintf(
+                        'Cannot generate page "%s" because of an error in `classes`: The class "%s" is not a Command.',
+                        $pageName,
+                        $className
+                    )
+                );
+            }
+            $command = $refl->newInstanceWithoutConstructor();
+            $method_configure = $refl->getMethod('configure');
+
+        } catch (ReflectionException $e) {
+
+            throw new RuntimeException(
+                sprintf(
+                    'Cannot generate page "%s" because of an error in `classes`.',
+                    $pageName
+                ),
+                null,
+                $e
+            );
+
+        }
+
+        # Command.__construct creates an InputDefinition ...
+        $command->setDefinition(new InputDefinition);
+
+        # ... and calls the configure method
+        if (! $method_configure->isPublic()) {
+            $method_configure->setAccessible(true);
+        }
+        $method_configure->invoke($command);
+
         return $command;
     }
 }
