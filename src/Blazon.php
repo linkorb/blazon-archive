@@ -16,7 +16,7 @@ class Blazon
     protected $twig;
     protected $site;
     protected $filename;
-    
+
     public function __construct($filename, OutputInterface $output = null, $dest = null)
     {
         $this->filename = $filename;
@@ -28,43 +28,43 @@ class Blazon
             $output = new \Symfony\Component\Console\Output\NullOutput();
         }
         $this->output = $output;
-        
+
         $this->src = dirname($filename);
         $this->dest = $dest;
     }
-    
+
     public function getSrc()
     {
         return $this->src;
     }
-    
+
     public function getDest()
     {
         return $this->dest;
     }
-    
+
     public function getTwig()
     {
         return $this->twig;
     }
-    
+
     public function getOutput()
     {
         return $this->output;
     }
-    
+
     protected $pages = [];
-    
+
     public function addPage(Page $page)
     {
         $this->pages[$page->getName()] = $page;
     }
-    
+
     public function getSite()
     {
         return $this->site;
     }
-    
+
     public function getPages()
     {
         return $this->pages;
@@ -85,7 +85,7 @@ class Blazon
                     $this->dest = $dest;
                 }
             }
-        
+
             if (!$this->dest) {
                 $this->dest = dirname($this->filename) . '/build';
             }
@@ -99,19 +99,19 @@ class Blazon
                 $this->src = $src;
             }
         }
-        
+
         if (isset($config['site']['properties'])) {
             foreach ($config['site']['properties'] as $key => $value) {
                 $this->site->setProperty($key, $value);
             }
         }
-        
+
         if (isset($config['pages'])) {
             foreach ($config['pages'] as $name => $pageNode) {
                 $page = new Page($name, $pageNode);
-                
+
                 $handler = null;
-                    
+
                 if (isset($pageNode['src'])) {
                     $pageSrc = $this->src . '/' . $pageNode['src'];
                     if (!file_exists($pageSrc)) {
@@ -123,7 +123,7 @@ class Blazon
                     $handlerClassName = $pageNode['handler'];
                     $handler = new $handlerClassName($this);
                 }
-                
+
                 if (!$handler) {
                     if ($page->getSrc()=='') {
                         throw new RuntimeException("No handler and no src specified for page: " . $page->getName());
@@ -144,7 +144,7 @@ class Blazon
                 }
                 $page->setHandler($handler);
                 $handler->init($page, $config);
-            
+
 
                 if (isset($pageNode['properties'])) {
                     foreach ($pageNode['properties'] as $key => $value) {
@@ -155,26 +155,24 @@ class Blazon
                 $this->addPage($page);
             }
         }
-        
-        
+
+
         if (!file_exists($this->src)) {
             throw new RuntimeException("Source directory does not exist: " . $this->src);
         }
         if (!file_exists($this->dest)) {
-            if (!file_exists($this->dest)) {
-                mkdir($this->dest, 0755);
-            }
+            mkdir($this->dest, 0755);
         }
-        
+
         $loader = new \Twig_Loader_Filesystem($this->src);
-        
+
         $loader->addPath(
             $this->src . '/templates',
             'Templates'
         );
-        
+
         $this->twig = new \Twig_Environment($loader, []);
-        
+
         $filter = new \Twig_SimpleFilter('urlsafe_command_name', function (\Twig_Environment $env, $string) {
             // get the current charset for instance
             $string = str_replace(':', '__', $string);
@@ -184,7 +182,7 @@ class Blazon
 
         return $this;
     }
-    
+
     public function copyAssets($src, $dest, $process = true)
     {
         if (!file_exists($src)) {
@@ -202,7 +200,7 @@ class Blazon
             ),
             \RecursiveIteratorIterator::SELF_FIRST
         );
-        
+
         foreach ($iterator as $item) {
             if ($item->isDir()) {
                 $path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
@@ -220,7 +218,7 @@ class Blazon
                         throw new RuntimeException("Blocked: " . $iterator->getSubPathName());
                         break;
                 }
-                
+
                 if (!$process) {
                     copy($srcFile, $destFile);
                 } else {
@@ -240,7 +238,7 @@ class Blazon
             }
         }
     }
-    
+
     public function generate()
     {
         $this->output->writeLn('<info>Generating site</info>');
@@ -248,7 +246,7 @@ class Blazon
         $this->output->writeLn('   * src: ' . $this->src);
         $this->output->writeLn('   * dest: ' . $this->dest);
         $this->copyAssets($this->src . '/assets', $this->dest . '/assets');
-        
+
         foreach ($this->getPages() as $page) {
             $this->output->writeLn('Page: ' . $page->getName());
             $handler = $page->getHandler($this);
@@ -259,14 +257,14 @@ class Blazon
     public function init()
     {
         $this->load();
-        
+
         $this->output->writeLn('<info>Initializing site</info>');
         $this->output->writeLn('   * Filename: ' . $this->filename);
         $this->output->writeLn('   * src: ' . $this->src);
         $this->output->writeLn('   * dest: ' . $this->dest);
         $this->copyAssets($this->src . '/../static/assets', $this->dest . '/assets', false);
     }
-    
+
     public function run()
     {
         $this->load();
