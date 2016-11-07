@@ -41,7 +41,11 @@ class MarkdownHandler
         $parsedown = new Parsedown();
         $html = $parsedown->text($this->content);
         
-        $template = $this->blazon->getTwig()->loadTemplate('templates/default.html.twig');
+        $layout = $page->getLayout();
+        if (!$layout) {
+            $layout = 'default';
+        }
+        $template = $this->blazon->getTwig()->loadTemplate('templates/' . $layout . '.html.twig');
         $site = $this->blazon->getSite();
         
         $data = [

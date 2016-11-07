@@ -119,6 +119,9 @@ class Blazon
                     }
                     $page->setSrc($pageNode['src']);
                 }
+                if (isset($pageNode['layout'])) {
+                    $page->setLayout($pageNode['layout']);
+                }
                 if (isset($pageNode['handler'])) {
                     $handlerClassName = $pageNode['handler'];
                     $handler = new $handlerClassName($this);
