@@ -6,6 +6,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Parser as YamlParser;
 use Blazon\Model\Site;
 use Blazon\Model\Page;
+use Webuni\FrontMatter\FrontMatter;
 use RuntimeException;
 
 class Blazon
@@ -31,6 +32,7 @@ class Blazon
 
         $this->src = dirname($filename);
         $this->dest = $dest;
+        $this->frontMatter = new FrontMatter();
     }
 
     public function getSrc()
@@ -70,6 +72,59 @@ class Blazon
         return $this->pages;
     }
 
+
+    private function loadPages($root, $pattern, $flags = 0) {
+        $files = glob($pattern, $flags);
+
+        foreach ($files as $filename) {
+            $info = pathinfo($filename);
+            if (isset($info['extension'])) {
+                switch ($info['extension']) {
+                    case 'md':
+                    case 'markdown':
+                    case 'html':
+                    case 'twig':
+                    case 'txt':
+                        $page = $this->loadPage($filename);
+                        $root->addPage($page);
+
+                        //print_r($page);
+                        break;
+                }
+            }
+        }
+        if (!$root->hasIndex()) {
+            $page = new Page();
+            $page->setName('');
+            $page->setContent("Generated index");
+            $root->addPage($page);
+        }
+
+        foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
+            $index = $root->getPage('');
+            $this->loadPages($index, $dir.'/'.basename($pattern), $flags);
+        }
+    }
+
+    private function loadPage($filename)
+    {
+        $info = pathinfo($filename);
+        $name = $info['filename'];
+        $name = str_replace('.html', '', $name);
+        $page = new Page($name);
+        $page->setFilename($filename);
+
+        $data = file_get_contents($filename);
+
+        $doc = $this->frontMatter->parse($data);
+        $config = $doc->getData();
+        foreach ($config as $key => $value) {
+            $page->setProperty($key, $value);
+        }
+        $page->setContent($doc->getContent());
+        return $page;
+    }
+
     public function load()
     {
         $this->site = new Site();
@@ -106,6 +161,11 @@ class Blazon
             }
         }
 
+        $this->loadPages($this->src . '/*');
+
+        exit("B00m");
+
+        /*
         $pageDirs = array();
         if (isset($config['pages'])) {
             $pagePathPattern = sprintf(
@@ -177,6 +237,9 @@ class Blazon
                 $this->addPage($page);
             }
         }
+        */
+
+
 
 
         if (!file_exists($this->src)) {
@@ -249,7 +312,7 @@ class Blazon
                         case 'less':
                             // Only compile on request
                             $content = file_get_contents($srcFile);
-                            echo $srcFile . "\n";
+                            //echo $srcFile . "\n";
                             $css = $less->compile($content);
                             $destFile = str_replace('.less', '.css', $destFile);
                             file_put_contents($destFile, $css);

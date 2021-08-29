@@ -14,12 +14,12 @@ pages:
             myprop: This is my page property!
     about:
         src: about.html.twig
-    
+
     contact:
         src: contact.html
-        
-    commands:
-        handler: "\\Blazon\\Handler\\CommandsHandler"
-        classes:
-            - "\\Blazon\\Command\\SiteGenerateCommand"
-            - "\\Blazon\\Command\\SiteServeCommand"
+
+    # commands:
+    #     handler: "\\Blazon\\Handler\\CommandsHandler"
+    #     classes:
+    #         - "\\Blazon\\Command\\SiteGenerateCommand"
+    #         - "\\Blazon\\Command\\SiteServeCommand"

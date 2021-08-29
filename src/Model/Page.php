@@ -4,55 +4,37 @@ namespace Blazon\Model;
 
 class Page implements PageInterface
 {
-    protected $baseDir;
     protected $name;
-    protected $title;
-    protected $src;
+    protected $filename;
     protected $handler;
-    protected $layout;
-    protected $config;
+    protected $content;
+    protected $next;
+    protected $previous;
+
 
     use PropertyTrait;
 
-    public function __construct($name, $config = [])
-    {
-        $this->setName($name);
-        $this->config = $config;
-    }
-
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function setName($name)
+    public function __construct($name, $content = null, $properties = [])
     {
         $this->name = $name;
-        return $this;
+        $this->content = $content;
+        $this->properties = $properties;
     }
 
-    public function getTitle()
+
+    public function setFilename($filename)
     {
-        if (!$this->title) {
-            return $this->getName();
-        }
-        return $this->title;
+        $this->filename = $filename;
     }
 
-    public function setTitle($title)
+    public function getContent()
     {
-        $this->title = $title;
-        return $this;
+        return $this->content;
     }
 
-    public function getSrc()
+    public function setContent($content)
     {
-        return $this->src;
-    }
-
-    public function setSrc($src)
-    {
-        $this->src = $src;
+        $this->content = $content;
         return $this;
     }
 
@@ -67,17 +49,6 @@ class Page implements PageInterface
         return $this;
     }
 
-    public function getLayout()
-    {
-        return $this->layout;
-    }
-
-    public function setLayout($layout)
-    {
-        $this->layout = $layout;
-        return $this;
-    }
-
     public function getConfig()
     {
         return $this->config;
@@ -89,13 +60,8 @@ class Page implements PageInterface
         return $this;
     }
 
-    public function getBaseDir()
+    public function isIndex()
     {
-        return $this->baseDir;
-    }
-
-    public function setBaseDir($baseDir)
-    {
-        $this->baseDir = $baseDir;
+        return $this->getName()=='index';
     }
 }

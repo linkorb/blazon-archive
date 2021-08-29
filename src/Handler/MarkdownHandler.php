@@ -3,7 +3,7 @@
 namespace Blazon\Handler;
 
 use Parsedown;
-use VKBansal\FrontMatter\Parser as FrontMatterParser;
+use Webuni\FrontMatter\FrontMatter;
 
 use Blazon\Blazon;
 use Blazon\Model\Page;
@@ -23,9 +23,10 @@ class MarkdownHandler
     {
         $data = file_get_contents($this->blazon->getSrc() . '/' . $page->getSrc());
 
-        $doc = FrontMatterParser::parse($data);
-        $config = $doc->getConfig();
-        foreach ($config as $key => $value) {
+        $frontMatter = new FrontMatter();
+        $doc = $frontMatter->parse($data);
+        $data = $doc->getData();
+        foreach ($data as $key => $value) {
             $page->setProperty($key, $value);
         }
         /*
@@ -40,7 +41,7 @@ class MarkdownHandler
     {
         $parsedown = new Parsedown();
         $html = $parsedown->text($this->content);
-        
+
         $layout = $page->getLayout();
         if (!$layout) {
             $layout = 'default';
